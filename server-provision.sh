@@ -6,6 +6,7 @@
 if [ $(id -u) -eq 0 ]; then
 	username="zabbix"
 	password="zabbix"
+	
 	egrep "^$username" /etc/passwd >/dev/null
 	if [ $? -eq 0 ]; then
 		echo "$username exists!"
@@ -39,6 +40,7 @@ sudo apt-get install -y postgresql postgresql-contrib
 sudo -i -u postgres psql -c "ALTER ROLE postgres WITH PASSWORD 'postgres';"
 
 sudo -u postgres createdb zabbix
+sudo -u postgres createdb zabbix-proxy
 
 ## PHP
 
@@ -46,10 +48,11 @@ sudo apt-get install -y php7.2-dev php7.2-bcmath php7.2-mbstring php7.2-gd php7.
 
 ## Zabbix
 
-# server
 wget https://repo.zabbix.com/zabbix/5.0/ubuntu/pool/main/z/zabbix-release/zabbix-release_5.0-1+bionic_all.deb
 dpkg -i zabbix-release_5.0-1+bionic_all.deb
 sudo apt-get update
+
+# server
 
 sudo apt-get install -y zabbix-server-pgsql zabbix-frontend-php zabbix-apache-conf
 sudo apt upgrade -y
@@ -60,8 +63,20 @@ cp -f /vagrant/server-config/apache.conf /etc/zabbix/apache.conf
 cp -f /vagrant/server-config/zabbix_agentd.conf /etc/zabbix/zabbix_agentd.conf
 cp -f /vagrant/server-config/zabbix_server.conf /etc/zabbix/zabbix_server.conf
 
-systemctl restart zabbix-server zabbix-agent apache2
-systemctl enable zabbix-server zabbix-agent apache2
+sudo systemctl restart zabbix-server apache2
+sudo systemctl enable zabbix-server apache2
+
+# proxy
+
+sudo apt-get install -y zabbix-proxy-pgsql
+sudo apt upgrade -y
+
+zcat /usr/share/doc/zabbix-proxy-pgsql/schema.sql.gz | sudo -u postgres psql zabbix-proxy
+
+cp -f /vagrant/server-config/zabbix_proxy.conf /etc/zabbix/zabbix_proxy.conf
+
+sudo systemctl restart zabbix-proxy
+sudo systemctl enable zabbix-proxy
 
 # agent
 

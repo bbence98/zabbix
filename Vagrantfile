@@ -22,6 +22,7 @@ Vagrant.configure("2") do |config|
   config.vm.define "agent1" do |agent1|
     agent1.vm.box = "ubuntu/bionic64"
     agent1.vm.network "private_network", ip: "192.168.10.195"
+    agent1.vm.provision "shell", path: "agent-provision.sh"
   end
 
   # Disable automatic box update checking. If you disable this, then

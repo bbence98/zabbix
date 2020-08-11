@@ -17,12 +17,14 @@ Vagrant.configure("2") do |config|
     zabbix_server.vm.box = "ubuntu/bionic64"
     zabbix_server.vm.network "private_network", ip: "192.168.10.198"
     zabbix_server.vm.provision "shell", path: "server-provision.sh"
+    zabbix_server.vm.hostname = "zabbix-server"
   end  
     
   config.vm.define "agent1" do |agent1|
     agent1.vm.box = "ubuntu/bionic64"
     agent1.vm.network "private_network", ip: "192.168.10.195"
     agent1.vm.provision "shell", path: "agent-provision.sh"
+    agent1.vm.hostname = "agent1"
   end
 
   # Disable automatic box update checking. If you disable this, then
